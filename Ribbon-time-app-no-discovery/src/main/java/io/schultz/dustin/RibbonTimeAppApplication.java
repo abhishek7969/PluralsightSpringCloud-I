@@ -1,0 +1,41 @@
+package io.schultz.dustin;
+
+import javax.inject.Inject;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+import org.springframework.cloud.netflix.ribbon.RibbonClient;
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+import io.schultz.config.dustin.RibbonTimeConfig;
+
+
+@SpringBootApplication
+@RestController
+@RibbonClient(name="time-service" , configuration=RibbonTimeConfig.class) //logical service identifier
+public class RibbonTimeAppApplication {
+
+	@Inject
+	private RestTemplate restTemp;
+	
+	public static void main(String[] args) {
+		SpringApplication.run(RibbonTimeAppApplication.class, args);
+	}
+	
+	@Bean
+	@LoadBalanced
+	public RestTemplate restTemplate() {
+		return new RestTemplate();
+	}
+	
+	@GetMapping
+	public String getTime() {
+		return restTemp.getForEntity("http://time-service", String.class).getBody();
+	}
+
+	
+}
